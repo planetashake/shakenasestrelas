@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Edição Aventura Instrumental</title>
+    <title>Planeta Shake - Edição Foco e Controle</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
@@ -46,49 +46,15 @@
     </div>
 
 <script>
-    let audioCtx, musicLoop, musicGain, active = true, spawnTimeout;
-    let score = 0, lives = 2, speed = 6;
+    let audioCtx, active = true, spawnTimeout;
+    let score = 0, lives = 2, speed = 3; // Velocidade inicial reduzida para 3
     const ship = document.getElementById('ship'), container = document.getElementById('game-container');
 
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            startMelodicAdventure();
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
-    }
-
-    // MÚSICA DE AVENTURA INSTRUMENTAL (SEM VOZ)
-    function startMelodicAdventure() {
-        if (musicLoop) return;
-        musicGain = audioCtx.createGain();
-        musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime); // 50% de volume
-        musicGain.connect(audioCtx.destination);
-
-        const melody = [329.63, 392.00, 440.00, 523.25, 493.88, 392.00, 440.00]; // E4, G4, A4, C5, B4, G4, A4
-        let step = 0;
-
-        function playNote() {
-            if (!active || !audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const noteGain = audioCtx.createGain();
-            
-            osc.type = 'triangle'; // Som de aventura retrô suave
-            osc.frequency.setValueAtTime(melody[step % melody.length], audioCtx.currentTime);
-            
-            noteGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
-            noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-            
-            osc.connect(noteGain);
-            noteGain.connect(musicGain);
-            
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.8);
-            
-            step++;
-            musicLoop = setTimeout(playNote, 400); // Ritmo constante
-        }
-        playNote();
     }
 
     function toggleFullscreen() {
@@ -150,8 +116,7 @@
                     if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); triggerShipGlow('life'); }
                 } else {
                     lives--; updateLives(); 
-                    // SOM DE COLISÃO REFORÇADO
-                    playSfx(100, 'sawtooth', 0.25, 0.4); 
+                    playSfx(100, 'sawtooth', 0.25, 0.4); // Som de colisão mantido
                     triggerShipGlow('damage');
                     if(lives <= 0) gameOver();
                 }
@@ -174,7 +139,6 @@
 
     function gameOver() {
         active = false; clearTimeout(spawnTimeout);
-        clearTimeout(musicLoop); musicLoop = null;
         playSfx(60, 'square', 0.3, 1.5); 
         document.getElementById('msg').style.display = 'block';
         document.getElementById('final-stats').innerText = `Shakes coletados: ${score}`;
@@ -182,7 +146,7 @@
     }
 
     function resetGame() {
-        score = 0; lives = 2; speed = 6; active = true;
+        score = 0; lives = 2; speed = 3; active = true;
         document.getElementById('score').innerText = '0';
         document.getElementById('msg').style.display = 'none';
         ship.style.display = 'block'; ship.style.left = '50%';
