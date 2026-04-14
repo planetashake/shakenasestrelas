@@ -3,37 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Beta 0.2</title>
+    <title>Planeta Shake - Beta 0.5 (Preload Edition)</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
-        #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; }
-        #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; z-index: 100; opacity: 0.9; pointer-events: none; }
+        #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; display: none; }
+        
+        /* Tela de Loading */
+        #loading-screen { 
+            position: absolute; width: 100vw; height: 100vh; background: #05051a; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; 
+        }
+        #load-bar-container { width: 200px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; margin-top: 20px; overflow: hidden; }
+        #load-bar { width: 0%; height: 100%; background: #fc845d; transition: width 0.3s; }
+        
+        #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; z-index: 100; opacity: 0.9; }
         #fullscreen-btn { position: absolute; top: 15px; left: 15px; z-index: 110; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 10px 18px; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 0.7rem; backdrop-filter: blur(4px); }
         #ui-right-cluster { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; align-items: flex-end; z-index: 100; }
         .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 2px #000; }
         #lives-container { display: flex; gap: 6px; margin-top: 5px; }
-        .life-icon { width: 20px; height: 20px; background-image: url('vida.png'); background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 0 5px #00ff00); }
-        #ship { position: absolute; width: 45px; height: 35px; background-image: url('nave.png'); background-size: contain; background-repeat: no-repeat; z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); filter: drop-shadow(0 0 10px #00f2ff); transition: filter 0.1s; will-change: left; }
-        .glow-shake { filter: drop-shadow(0 0 25px #fc845d) brightness(1.5) !important; }
-        .glow-life { filter: drop-shadow(0 0 25px #00ff00) brightness(1.5) !important; }
-        .glow-damage { filter: drop-shadow(0 0 25px #ff0000) brightness(1.5) !important; }
+        .life-icon { width: 20px; height: 20px; background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 0 5px #00ff00); }
+        #ship { position: absolute; width: 45px; height: 35px; background-size: contain; background-repeat: no-repeat; z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); filter: drop-shadow(0 0 10px #00f2ff); }
         .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; }
         .obj-milkshake { animation: pulse-orange 0.8s infinite alternate ease-in-out; }
         .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
         @keyframes pulse-orange { from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); } to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); } }
         @keyframes pulse-green { from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); } to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); } }
-        
-        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 35px; border-radius: 25px; color: #f8f9f9; text-align: center; display: none; z-index: 200; width: 80%; max-width: 350px; border: 2px solid #4f2bd0; }
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 35px; border-radius: 25px; color: #f8f9f9; text-align: center; display: none; z-index: 200; width: 85%; max-width: 350px; border: 2px solid #4f2bd0; }
         .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1rem; }
-        
-        /* Estilo da Versão - Discreto */
-        .version-footer { margin-top: 25px; font-size: 0.65rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.5px; }
-        
+        .version-footer { margin-top: 25px; font-size: 0.7rem; color: rgba(255, 255, 255, 0.7); display: block; width: 100%; text-align: center; }
         .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; z-index: 1; }
     </style>
 </head>
 <body>
+    <div id="loading-screen">
+        <h2 id="load-text" style="color: #fc845d; letter-spacing: 2px;">CARREGANDO...</h2>
+        <div id="load-bar-container"><div id="load-bar"></div></div>
+        <button id="start-btn" class="restart-btn" style="display:none; width: 200px;" onclick="startGame()">INICIAR AVENTURA</button>
+    </div>
+
     <div id="game-container">
         <button id="fullscreen-btn" onclick="toggleFullscreen()">TELA CHEIA</button>
         <img src="logo.png" id="main-logo">
@@ -47,14 +55,48 @@
             <h1 style="color: #fc845d; margin: 0;">COLISÃO FATAL</h1>
             <p id="final-stats" style="font-size: 1.2rem; margin: 15px 0;"></p>
             <button class="restart-btn" onclick="resetGame()">REINICIAR</button>
-            <div class="version-footer">beta 0.2 - © Planeta Shake LTDA</div>
+            <div class="version-footer">beta 0.5 - © Planeta Shake LTDA</div>
         </div>
     </div>
 
 <script>
-    let audioCtx, musicLoop, active = true, spawnTimeout;
+    let audioCtx, musicLoop, active = false, spawnTimeout;
     let score = 0, lives = 2, speed = 3;
     const ship = document.getElementById('ship'), container = document.getElementById('game-container');
+    const assets = ['logo.png', 'nave.png', 'milkshake.png', 'vida.png', 'planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
+    let loadedCount = 0;
+
+    // PRÉ-CARREGAMENTO DE ARQUIVOS
+    function preloadAssets() {
+        assets.forEach(src => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => {
+                loadedCount++;
+                const progress = (loadedCount / assets.length) * 100;
+                document.getElementById('load-bar').style.width = progress + '%';
+                if(loadedCount === assets.length) {
+                    document.getElementById('load-text').innerText = "SISTEMAS PRONTOS";
+                    document.getElementById('start-btn').style.display = 'block';
+                }
+            };
+            img.onerror = () => { // Caso algum arquivo falte, continua para não travar o loading
+                loadedCount++;
+                if(loadedCount === assets.length) document.getElementById('start-btn').style.display = 'block';
+            };
+        });
+    }
+
+    function startGame() {
+        document.getElementById('loading-screen').style.display = 'none';
+        container.style.display = 'block';
+        active = true;
+        initAudio();
+        spawn();
+        updateLives();
+        // Set background images after container is visible
+        ship.style.backgroundImage = "url('nave.png')";
+    }
 
     function initAudio() {
         if (!audioCtx) {
@@ -74,7 +116,7 @@
             const g = audioCtx.createGain();
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(melody[step % melody.length], audioCtx.currentTime);
-            g.gain.setValueAtTime(0.02, audioCtx.currentTime); // Volume controlado
+            g.gain.setValueAtTime(0.02, audioCtx.currentTime);
             g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
             osc.connect(g); g.connect(audioCtx.destination);
             osc.start(); osc.stop(audioCtx.currentTime + 0.8);
@@ -85,10 +127,11 @@
     }
 
     function toggleFullscreen() {
-        initAudio();
         if (!document.fullscreenElement) container.requestFullscreen().catch(()=>{});
         else document.exitFullscreen();
     }
+
+    function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
 
     function triggerShipGlow(type) {
         ship.classList.remove('glow-shake', 'glow-life', 'glow-damage');
@@ -145,21 +188,24 @@
                     lives--; updateLives(); 
                     playSfx(100, 'sawtooth', 0.25, 0.4); 
                     triggerShipGlow('damage');
+                    vibrate(200);
                     if(lives <= 0) gameOver();
                 }
                 obj.remove(); return;
             }
             if(pos > window.innerHeight) obj.remove(); else requestAnimationFrame(fall);
         }
-        fall();
-        spawnTimeout = setTimeout(spawn, 800);
+            fall();
+            spawnTimeout = setTimeout(spawn, 800);
     }
 
     function updateLives() {
         const div = document.getElementById('lives-container');
         div.innerHTML = '';
         for(let i=0; i<lives; i++) {
-            const icon = document.createElement('div'); icon.className = 'life-icon';
+            const icon = document.createElement('div'); 
+            icon.className = 'life-icon';
+            icon.style.backgroundImage = "url('vida.png')";
             div.appendChild(icon);
         }
     }
@@ -168,6 +214,7 @@
         active = false; clearTimeout(spawnTimeout);
         clearTimeout(musicLoop); musicLoop = null;
         playSfx(60, 'square', 0.3, 1.5); 
+        vibrate(500);
         document.getElementById('msg').style.display = 'block';
         document.getElementById('final-stats').innerText = `Shakes coletados: ${score}`;
         ship.style.display = 'none';
@@ -178,11 +225,10 @@
         document.getElementById('score').innerText = '0';
         document.getElementById('msg').style.display = 'none';
         ship.style.display = 'block'; ship.style.left = '50%';
-        updateLives(); spawn(); initAudio();
+        updateLives(); spawn(); startMusic();
     }
 
     function move(e) {
-        initAudio();
         if(!active) return;
         const x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
         const rect = container.getBoundingClientRect();
@@ -195,7 +241,8 @@
     container.addEventListener('touchstart', move);
     container.addEventListener('touchmove', (e) => { if(active) e.preventDefault(); move(e); }, {passive: false});
 
-    updateLives(); spawn();
+    // Iniciar Preload e estrelas
+    preloadAssets();
     for(let i=0; i<40; i++) {
         const s = document.createElement('div'); s.className = 'star';
         s.style.width = s.style.height = Math.random()*3+'px';
