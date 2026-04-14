@@ -3,34 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Beta 0.8</title>
+    <title>Planeta Shake - Beta 0.9 (Big Logo)</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
-        
         #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; display: none; }
         
-        #loading-screen { 
-            position: absolute; width: 100vw; height: 100vh; background: #05051a; 
-            display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; 
-        }
+        /* Estilo do Loading */
+        #loading-screen { position: absolute; width: 100vw; height: 100vh; background: #05051a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; }
         #loading-logo { width: 150px; margin-bottom: 20px; animation: pulse-logo 2s infinite ease-in-out; }
         @keyframes pulse-logo { 0%, 100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
-        
         #load-bar-container { width: 200px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
         #load-bar { width: 0%; height: 100%; background: #fc845d; transition: width 0.2s; }
         
-        #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 100px; z-index: 100; opacity: 0.9; pointer-events: none; }
         #fullscreen-btn { position: absolute; top: 15px; left: 15px; z-index: 110; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 15px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; }
-        
         .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 2px #000; }
         
-        #ship { 
-            position: absolute; width: 45px; height: 35px; background-size: contain; background-repeat: no-repeat; 
-            z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); 
-            filter: drop-shadow(0 0 10px #00f2ff); will-change: left, filter; transition: filter 0.1s;
-        }
-
+        #ship { position: absolute; width: 45px; height: 35px; background-size: contain; background-repeat: no-repeat; z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); filter: drop-shadow(0 0 10px #00f2ff); will-change: left, filter; transition: filter 0.1s; }
         .glow-shake { filter: drop-shadow(0 0 25px #fc845d) brightness(1.5) !important; }
         .glow-life { filter: drop-shadow(0 0 25px #00ff00) brightness(1.5) !important; }
         .glow-damage { filter: drop-shadow(0 0 25px #ff0000) brightness(1.5) !important; }
@@ -38,14 +27,14 @@
         .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; will-change: transform; }
         .obj-milkshake { animation: pulse-orange 0.8s infinite alternate ease-in-out; }
         .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
-        
         @keyframes pulse-orange { from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); } to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); } }
         @keyframes pulse-green { from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); } to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); } }
 
-        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 30px; border-radius: 20px; text-align: center; display: none; z-index: 200; width: 85%; max-width: 320px; border: 2px solid #4f2bd0; }
-        .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; width: 100%; font-size: 1rem; margin-top: 15px; }
-        .version-footer { margin-top: 20px; font-size: 0.65rem; color: rgba(255, 255, 255, 0.5); }
-        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; }
+        /* Painel de Game Over Otimizado */
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 40px; border-radius: 25px; text-align: center; display: none; z-index: 200; width: 85%; max-width: 380px; border: 3px solid #4f2bd0; box-shadow: 0 0 30px rgba(0,0,0,0.9); }
+        .restart-btn { padding: 18px 35px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; width: 100%; font-size: 1.1rem; margin-top: 20px; box-shadow: 0 5px 0 #b35d41; }
+        .version-footer { margin-top: 25px; font-size: 0.65rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.5px; }
+        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; z-index: 1; }
     </style>
 </head>
 <body>
@@ -57,18 +46,18 @@
 
     <div id="game-container">
         <button id="fullscreen-btn" onclick="toggleFullscreen()">TELA CHEIA</button>
-        <img src="logo.png" id="main-logo">
+        <img src="logo.png" id="game-logo" style="position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 100px; z-index: 100; opacity: 0.9;">
         <div style="position: absolute; top: 15px; right: 15px; text-align: right; z-index: 100;">
             <div class="orange-ui">Shake: <span id="score">0</span></div>
             <div id="lives-container" style="display: flex; gap: 5px; margin-top: 5px; justify-content: flex-end;"></div>
         </div>
         <div id="ship"></div>
         <div id="msg">
-            <img src="logo.png" style="width: 100px; margin-bottom: 10px;">
-            <h1 style="color: #fc845d; margin: 0; font-size: 1.5rem;">COLISÃO FATAL</h1>
-            <p id="final-stats" style="font-size: 1.1rem; margin: 10px 0;"></p>
+            <img src="logo.png" style="width: 200px; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(252, 132, 93, 0.5));">
+            <h1 style="color: #fc845d; margin: 0; font-size: 1.8rem; text-transform: uppercase;">Colisão Fatal</h1>
+            <p id="final-stats" style="font-size: 1.3rem; margin: 15px 0; font-weight: bold;"></p>
             <button class="restart-btn" onclick="resetGame()">JOGAR DE NOVO</button>
-            <div class="version-footer">beta 0.8 - © Planeta Shake LTDA</div>
+            <div class="version-footer">beta 0.9 - © Planeta Shake LTDA</div>
         </div>
     </div>
 
@@ -156,30 +145,25 @@
         obj.className = 'obj';
         const rand = Math.random();
         let type = 'bad';
-        
         if(rand < 0.3) {
-            type = 'shake'; obj.classList.add('obj-milkshake');
-            obj.style.backgroundImage = "url('milkshake.png')";
+            type = 'shake'; obj.style.backgroundImage = "url('milkshake.png')";
             obj.style.width = '36px'; obj.style.height = '46px';
+            obj.classList.add('obj-milkshake');
         } else if(rand < 0.35) {
-            type = 'life'; obj.classList.add('obj-life');
-            obj.style.backgroundImage = "url('vida.png')";
+            type = 'life'; obj.style.backgroundImage = "url('vida.png')";
             obj.style.width = '30px'; obj.style.height = '30px';
+            obj.classList.add('obj-life');
         } else {
             const imgs = ['planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
             obj.style.backgroundImage = `url('${imgs[Math.floor(Math.random()*4)]}')`;
             obj.style.width = obj.style.height = '42px';
         }
-
         obj.style.left = Math.random() * (container.offsetWidth - 40) + 'px';
-        let pos = -60;
-        container.appendChild(obj);
+        let pos = -60; container.appendChild(obj);
 
         function fall() {
             if(!active) { obj.remove(); return; }
-            pos += speed;
-            obj.style.transform = `translateY(${pos}px)`;
-            
+            pos += speed; obj.style.transform = `translateY(${pos}px)`;
             if(pos > window.innerHeight - 150) {
                 const r1 = ship.getBoundingClientRect(), r2 = obj.getBoundingClientRect();
                 if(!(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom)) {
@@ -189,8 +173,7 @@
                     } else if(type === 'life') {
                         if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); triggerShipGlow('life'); }
                     } else {
-                        lives--; updateLives(); 
-                        playSfx(100, 'sawtooth', 0.2); triggerShipGlow('damage');
+                        lives--; updateLives(); playSfx(100, 'sawtooth', 0.2); triggerShipGlow('damage');
                         if (navigator.vibrate) navigator.vibrate(200);
                         if(lives <= 0) gameOver();
                     }
@@ -215,6 +198,7 @@
 
     function gameOver() {
         active = false; clearTimeout(spawnTimeout);
+        document.getElementById('game-logo').style.display = 'none'; // Esconde logo pequena
         if (navigator.vibrate) navigator.vibrate(500);
         document.getElementById('msg').style.display = 'block';
         document.getElementById('final-stats').innerText = `${score} shakes coletados`;
@@ -225,6 +209,7 @@
         score = 0; lives = 2; active = true;
         document.getElementById('score').innerText = '0';
         document.getElementById('msg').style.display = 'none';
+        document.getElementById('game-logo').style.display = 'block'; // Mostra logo pequena
         ship.style.display = 'block'; ship.style.left = '50%';
         updateLives(); spawn(); startMusic();
     }
@@ -235,8 +220,7 @@
     }
 
     container.addEventListener('touchmove', (e) => {
-        if(!active) return;
-        e.preventDefault();
+        if(!active) return; e.preventDefault();
         let x = e.touches[0].clientX;
         ship.style.left = Math.max(20, Math.min(container.offsetWidth - 25, x)) + 'px';
     }, {passive: false});
