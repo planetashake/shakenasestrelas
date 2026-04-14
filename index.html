@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Beta 0.9 (Big Logo)</title>
+    <title>Planeta Shake - Beta 1.0 (Progressive)</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
         #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; display: none; }
         
-        /* Estilo do Loading */
         #loading-screen { position: absolute; width: 100vw; height: 100vh; background: #05051a; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; }
         #loading-logo { width: 150px; margin-bottom: 20px; animation: pulse-logo 2s infinite ease-in-out; }
         @keyframes pulse-logo { 0%, 100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
@@ -30,7 +29,6 @@
         @keyframes pulse-orange { from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); } to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); } }
         @keyframes pulse-green { from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); } to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); } }
 
-        /* Painel de Game Over Otimizado */
         #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 40px; border-radius: 25px; text-align: center; display: none; z-index: 200; width: 85%; max-width: 380px; border: 3px solid #4f2bd0; box-shadow: 0 0 30px rgba(0,0,0,0.9); }
         .restart-btn { padding: 18px 35px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; width: 100%; font-size: 1.1rem; margin-top: 20px; box-shadow: 0 5px 0 #b35d41; }
         .version-footer { margin-top: 25px; font-size: 0.65rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.5px; }
@@ -57,12 +55,12 @@
             <h1 style="color: #fc845d; margin: 0; font-size: 1.8rem; text-transform: uppercase;">Colisão Fatal</h1>
             <p id="final-stats" style="font-size: 1.3rem; margin: 15px 0; font-weight: bold;"></p>
             <button class="restart-btn" onclick="resetGame()">JOGAR DE NOVO</button>
-            <div class="version-footer">beta 0.9 - © Planeta Shake LTDA</div>
+            <div class="version-footer">beta 1.0 - © Planeta Shake LTDA</div>
         </div>
     </div>
 
 <script>
-    let audioCtx, musicLoop, active = false, spawnTimeout;
+    let audioCtx, musicLoop, active = false, spawnTimeout, difficultyInterval;
     let score = 0, lives = 2, speed = 3;
     const ship = document.getElementById('ship'), container = document.getElementById('game-container');
     const assets = ['logo.png', 'nave.png', 'milkshake.png', 'vida.png', 'planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
@@ -92,6 +90,17 @@
         initAudio();
         updateLives();
         spawn();
+        startDifficultyProgression();
+    }
+
+    // AUMENTA A VELOCIDADE CONFORME O TEMPO PASSA
+    function startDifficultyProgression() {
+        if(difficultyInterval) clearInterval(difficultyInterval);
+        difficultyInterval = setInterval(() => {
+            if(active && speed < 12) { // Limite de velocidade máxima
+                speed += 0.2;
+            }
+        }, 2000); // A cada 2 segundos aumenta um pouco
     }
 
     function initAudio() {
@@ -183,7 +192,9 @@
             if(pos > window.innerHeight) obj.remove(); else requestAnimationFrame(fall);
         }
         requestAnimationFrame(fall);
-        spawnTimeout = setTimeout(spawn, 900);
+        // Diminui o tempo entre spawns conforme a velocidade aumenta
+        let spawnRate = Math.max(400, 900 - (speed * 40));
+        spawnTimeout = setTimeout(spawn, spawnRate);
     }
 
     function updateLives() {
@@ -197,8 +208,8 @@
     }
 
     function gameOver() {
-        active = false; clearTimeout(spawnTimeout);
-        document.getElementById('game-logo').style.display = 'none'; // Esconde logo pequena
+        active = false; clearTimeout(spawnTimeout); clearInterval(difficultyInterval);
+        document.getElementById('game-logo').style.display = 'none';
         if (navigator.vibrate) navigator.vibrate(500);
         document.getElementById('msg').style.display = 'block';
         document.getElementById('final-stats').innerText = `${score} shakes coletados`;
@@ -206,12 +217,12 @@
     }
 
     function resetGame() {
-        score = 0; lives = 2; active = true;
+        score = 0; lives = 2; speed = 3; active = true;
         document.getElementById('score').innerText = '0';
         document.getElementById('msg').style.display = 'none';
-        document.getElementById('game-logo').style.display = 'block'; // Mostra logo pequena
+        document.getElementById('game-logo').style.display = 'block';
         ship.style.display = 'block'; ship.style.left = '50%';
-        updateLives(); spawn(); startMusic();
+        updateLives(); spawn(); startMusic(); startDifficultyProgression();
     }
 
     function toggleFullscreen() {
