@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Beta 0.7</title>
+    <title>Planeta Shake - Beta 0.8</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
@@ -31,12 +31,10 @@
             filter: drop-shadow(0 0 10px #00f2ff); will-change: left, filter; transition: filter 0.1s;
         }
 
-        /* Efeitos de Brilho na Nave */
         .glow-shake { filter: drop-shadow(0 0 25px #fc845d) brightness(1.5) !important; }
         .glow-life { filter: drop-shadow(0 0 25px #00ff00) brightness(1.5) !important; }
         .glow-damage { filter: drop-shadow(0 0 25px #ff0000) brightness(1.5) !important; }
 
-        /* Brilho nos Objetos */
         .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; will-change: transform; }
         .obj-milkshake { animation: pulse-orange 0.8s infinite alternate ease-in-out; }
         .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
@@ -66,10 +64,11 @@
         </div>
         <div id="ship"></div>
         <div id="msg">
+            <img src="logo.png" style="width: 100px; margin-bottom: 10px;">
             <h1 style="color: #fc845d; margin: 0; font-size: 1.5rem;">COLISÃO FATAL</h1>
             <p id="final-stats" style="font-size: 1.1rem; margin: 10px 0;"></p>
             <button class="restart-btn" onclick="resetGame()">JOGAR DE NOVO</button>
-            <div class="version-footer">beta 0.7 - © Planeta Shake LTDA</div>
+            <div class="version-footer">beta 0.8 - © Planeta Shake LTDA</div>
         </div>
     </div>
 
