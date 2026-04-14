@@ -3,50 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Edição Final Harmony</title>
+    <title>Planeta Shake - Edição Aventura Instrumental</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
         #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; }
-        
         #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; z-index: 100; opacity: 0.9; pointer-events: none; }
-        
-        #fullscreen-btn { 
-            position: absolute; top: 15px; left: 15px; z-index: 110; 
-            background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); 
-            color: #fff; padding: 10px 18px; border-radius: 25px; 
-            font-weight: bold; cursor: pointer; font-size: 0.7rem; backdrop-filter: blur(4px);
-        }
-
+        #fullscreen-btn { position: absolute; top: 15px; left: 15px; z-index: 110; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 10px 18px; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 0.7rem; backdrop-filter: blur(4px); }
         #ui-right-cluster { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; align-items: flex-end; z-index: 100; }
         .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 2px #000; }
         #lives-container { display: flex; gap: 6px; margin-top: 5px; }
         .life-icon { width: 20px; height: 20px; background-image: url('vida.png'); background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 0 5px #00ff00); }
-        
-        #ship { 
-            position: absolute; width: 45px; height: 35px; background-image: url('nave.png'); background-size: contain; background-repeat: no-repeat; 
-            z-index: 50; left: 50%; bottom: 100px; 
-            transform: translateX(-50%) rotate(-38deg); 
-            filter: drop-shadow(0 0 10px #00f2ff); transition: filter 0.1s; will-change: left;
-        }
-
+        #ship { position: absolute; width: 45px; height: 35px; background-image: url('nave.png'); background-size: contain; background-repeat: no-repeat; z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); filter: drop-shadow(0 0 10px #00f2ff); transition: filter 0.1s; will-change: left; }
         .glow-shake { filter: drop-shadow(0 0 25px #fc845d) brightness(1.5) !important; }
         .glow-life { filter: drop-shadow(0 0 25px #00ff00) brightness(1.5) !important; }
         .glow-damage { filter: drop-shadow(0 0 25px #ff0000) brightness(1.5) !important; }
-
         .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; }
         .obj-milkshake { animation: pulse-orange 0.8s infinite alternate ease-in-out; }
         .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
-
-        @keyframes pulse-orange {
-            from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); }
-            to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); }
-        }
-        @keyframes pulse-green {
-            from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); }
-            to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); }
-        }
-
+        @keyframes pulse-orange { from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); } to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); } }
+        @keyframes pulse-green { from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); } to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); } }
         #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 35px; border-radius: 25px; color: #f8f9f9; text-align: center; display: none; z-index: 200; width: 80%; max-width: 350px; border: 2px solid #4f2bd0; }
         .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1rem; }
         .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; z-index: 1; }
@@ -70,37 +46,49 @@
     </div>
 
 <script>
-    let audioCtx, musicOsc, musicGain, active = true, spawnTimeout;
+    let audioCtx, musicLoop, musicGain, active = true, spawnTimeout;
     let score = 0, lives = 2, speed = 6;
     const ship = document.getElementById('ship'), container = document.getElementById('game-container');
 
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            startMusic();
+            startMelodicAdventure();
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    function startMusic() {
-        if (musicOsc) return;
-        musicOsc = audioCtx.createOscillator();
+    // MÚSICA DE AVENTURA INSTRUMENTAL (SEM VOZ)
+    function startMelodicAdventure() {
+        if (musicLoop) return;
         musicGain = audioCtx.createGain();
-        musicOsc.type = 'sine'; // Som atmosférico suave
-        musicOsc.frequency.setValueAtTime(73.42, audioCtx.currentTime); // Nota D2 (confortável)
-        musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime); // 50% Volume
-        musicOsc.connect(musicGain);
+        musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime); // 50% de volume
         musicGain.connect(audioCtx.destination);
-        musicOsc.start();
-        
-        setInterval(() => {
-            if(active && audioCtx) {
-                const now = audioCtx.currentTime;
-                // Transições suaves e lentas
-                musicOsc.frequency.linearRampToValueAtTime(82.41, now + 1.5); 
-                musicOsc.frequency.linearRampToValueAtTime(73.42, now + 3.0);
-            }
-        }, 3000);
+
+        const melody = [329.63, 392.00, 440.00, 523.25, 493.88, 392.00, 440.00]; // E4, G4, A4, C5, B4, G4, A4
+        let step = 0;
+
+        function playNote() {
+            if (!active || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const noteGain = audioCtx.createGain();
+            
+            osc.type = 'triangle'; // Som de aventura retrô suave
+            osc.frequency.setValueAtTime(melody[step % melody.length], audioCtx.currentTime);
+            
+            noteGain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+            noteGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            
+            osc.connect(noteGain);
+            noteGain.connect(musicGain);
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.8);
+            
+            step++;
+            musicLoop = setTimeout(playNote, 400); // Ritmo constante
+        }
+        playNote();
     }
 
     function toggleFullscreen() {
@@ -132,7 +120,6 @@
         obj.className = 'obj';
         const rand = Math.random();
         let type;
-
         if(rand < 0.3) {
             type = 'shake'; obj.classList.add('obj-milkshake');
             obj.style.backgroundImage = "url('milkshake.png')";
@@ -147,17 +134,13 @@
             obj.style.backgroundImage = `url('${imgs[Math.floor(Math.random()*4)]}')`;
             obj.style.width = obj.style.height = '45px';
         }
-
         obj.style.left = Math.random() * (container.offsetWidth - 50) + 'px';
-        obj.style.top = '-60px';
-        container.appendChild(obj);
+        obj.style.top = '-60px'; container.appendChild(obj);
 
         let pos = -60;
         function fall() {
             if(!active) { obj.remove(); return; }
-            pos += speed;
-            obj.style.top = pos + 'px';
-            
+            pos += speed; obj.style.top = pos + 'px';
             const r1 = ship.getBoundingClientRect(), r2 = obj.getBoundingClientRect();
             if(!(r1.right < r2.left+5 || r1.left > r2.right-5 || r1.bottom < r2.top+5 || r1.top > r2.bottom-5)) {
                 if(type === 'shake') { 
@@ -166,13 +149,15 @@
                 } else if(type === 'life') {
                     if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); triggerShipGlow('life'); }
                 } else {
-                    lives--; updateLives(); playSfx(100, 'sine', 0.2); triggerShipGlow('damage');
+                    lives--; updateLives(); 
+                    // SOM DE COLISÃO REFORÇADO
+                    playSfx(100, 'sawtooth', 0.25, 0.4); 
+                    triggerShipGlow('damage');
                     if(lives <= 0) gameOver();
                 }
                 obj.remove(); return;
             }
-            if(pos > window.innerHeight) obj.remove();
-            else requestAnimationFrame(fall);
+            if(pos > window.innerHeight) obj.remove(); else requestAnimationFrame(fall);
         }
         fall();
         spawnTimeout = setTimeout(spawn, 800);
@@ -189,8 +174,8 @@
 
     function gameOver() {
         active = false; clearTimeout(spawnTimeout);
-        if(musicGain) musicGain.gain.setValueAtTime(0, audioCtx.currentTime);
-        playSfx(50, 'sine', 0.3, 2.0); 
+        clearTimeout(musicLoop); musicLoop = null;
+        playSfx(60, 'square', 0.3, 1.5); 
         document.getElementById('msg').style.display = 'block';
         document.getElementById('final-stats').innerText = `Shakes coletados: ${score}`;
         ship.style.display = 'none';
@@ -202,7 +187,6 @@
         document.getElementById('msg').style.display = 'none';
         ship.style.display = 'block'; ship.style.left = '50%';
         updateLives(); spawn(); initAudio();
-        if(musicGain) musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime);
     }
 
     function move(e) {
