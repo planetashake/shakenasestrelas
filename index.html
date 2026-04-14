@@ -3,66 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Edição Visual Refinada</title>
+    <title>Planeta Shake - Edição Final Harmony</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
         #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; }
         
-        #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; z-index: 100; opacity: 0.9; pointer-events: none; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
+        #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; z-index: 100; opacity: 0.9; pointer-events: none; }
         
         #fullscreen-btn { 
             position: absolute; top: 15px; left: 15px; z-index: 110; 
             background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); 
             color: #fff; padding: 10px 18px; border-radius: 25px; 
-            font-weight: bold; cursor: pointer; font-size: 0.7rem; backdrop-filter: blur(4px); transition: 0.3s;
+            font-weight: bold; cursor: pointer; font-size: 0.7rem; backdrop-filter: blur(4px);
         }
-        #fullscreen-btn:hover { background: rgba(255, 255, 255, 0.25); }
 
         #ui-right-cluster { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; align-items: flex-end; z-index: 100; }
-        .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.2rem; text-shadow: 0 0 10px rgba(252, 132, 93, 0.5), 2px 2px #000; }
+        .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 2px #000; }
         #lives-container { display: flex; gap: 6px; margin-top: 5px; }
         .life-icon { width: 20px; height: 20px; background-image: url('vida.png'); background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 0 5px #00ff00); }
         
         #ship { 
             position: absolute; width: 45px; height: 35px; background-image: url('nave.png'); background-size: contain; background-repeat: no-repeat; 
             z-index: 50; left: 50%; bottom: 100px; 
-            /* Angulação corrigida para 38º anti-horário */
             transform: translateX(-50%) rotate(-38deg); 
-            filter: drop-shadow(0 0 10px #00f2ff); transition: width 0.3s, height 0.3s, filter 0.1s; will-change: left;
+            filter: drop-shadow(0 0 10px #00f2ff); transition: filter 0.1s; will-change: left;
         }
 
-        /* Efeitos de pulso de brilho na nave */
         .glow-shake { filter: drop-shadow(0 0 25px #fc845d) brightness(1.5) !important; }
         .glow-life { filter: drop-shadow(0 0 25px #00ff00) brightness(1.5) !important; }
         .glow-damage { filter: drop-shadow(0 0 25px #ff0000) brightness(1.5) !important; }
 
-        .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; will-change: top; }
-        
-        /* Novas animações de brilho pulsante para os objetos */
-        .obj-milkshake { 
-            animation: pulse-orange 0.8s infinite alternate ease-in-out;
-            filter: drop-shadow(0 0 8px #fc845d);
-        }
-        .obj-life { 
-            animation: pulse-green 0.8s infinite alternate ease-in-out;
-            filter: drop-shadow(0 0 8px #00ff00);
-        }
+        .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; }
+        .obj-milkshake { animation: pulse-orange 0.8s infinite alternate ease-in-out; }
+        .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
 
-        /* Keyframes otimizados para brilho neon pulsante */
         @keyframes pulse-orange {
             from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); }
-            to { filter: drop-shadow(0 0 15px rgba(252, 132, 93, 1)) drop-shadow(0 0 5px #fff); }
+            to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); }
         }
-
         @keyframes pulse-green {
             from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); }
-            to { filter: drop-shadow(0 0 15px rgba(0, 255, 0, 1)) drop-shadow(0 0 5px #fff); }
+            to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); }
         }
 
-        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 35px; border-radius: 25px; color: #f8f9f9; text-align: center; display: none; z-index: 200; width: 80%; max-width: 350px; border: 2px solid #4f2bd0; box-shadow: 0 0 30px rgba(0,0,0,0.8); }
-        .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1rem; box-shadow: 0 4px 0 #b35d41; transition: 0.1s; }
-        .restart-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #b35d41; }
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 35px; border-radius: 25px; color: #f8f9f9; text-align: center; display: none; z-index: 200; width: 80%; max-width: 350px; border: 2px solid #4f2bd0; }
+        .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1rem; }
         .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; z-index: 1; }
     </style>
 </head>
@@ -76,8 +62,8 @@
         </div>
         <div id="ship"></div>
         <div id="msg">
-            <img src="logo.png" style="width: 140px; margin-bottom: 15px; filter: drop-shadow(0 0 10px rgba(252, 132, 93, 0.3));">
-            <h1 style="color: #fc845d; margin: 0; font-size: 1.8rem;">COLISÃO FATAL</h1>
+            <img src="logo.png" style="width: 140px; margin-bottom: 15px;">
+            <h1 style="color: #fc845d; margin: 0;">COLISÃO FATAL</h1>
             <p id="final-stats" style="font-size: 1.2rem; margin: 15px 0;"></p>
             <button class="restart-btn" onclick="resetGame()">REINICIAR</button>
         </div>
@@ -87,11 +73,6 @@
     let audioCtx, musicOsc, musicGain, active = true, spawnTimeout;
     let score = 0, lives = 2, speed = 6;
     const ship = document.getElementById('ship'), container = document.getElementById('game-container');
-
-    const sizes = { 
-        'planeta.png': 31, 'venus.png': 47, 'meteoro.png': 50, 'foguete.png': 50,
-        'milkshake': { w: 36, h: 46 }, 'vida': 36 
-    };
 
     function initAudio() {
         if (!audioCtx) {
@@ -105,9 +86,9 @@
         if (musicOsc) return;
         musicOsc = audioCtx.createOscillator();
         musicGain = audioCtx.createGain();
-        musicOsc.type = 'square'; // Onda mais forte para garantir audibilidade
-        musicOsc.frequency.setValueAtTime(110, audioCtx.currentTime);
-        musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime); // 50% do volume original (0.08)
+        musicOsc.type = 'sine'; // Som atmosférico suave
+        musicOsc.frequency.setValueAtTime(73.42, audioCtx.currentTime); // Nota D2 (confortável)
+        musicGain.gain.setValueAtTime(0.04, audioCtx.currentTime); // 50% Volume
         musicOsc.connect(musicGain);
         musicGain.connect(audioCtx.destination);
         musicOsc.start();
@@ -115,10 +96,11 @@
         setInterval(() => {
             if(active && audioCtx) {
                 const now = audioCtx.currentTime;
-                musicOsc.frequency.exponentialRampToValueAtTime(82.41, now + 0.1); // E2
-                musicOsc.frequency.exponentialRampToValueAtTime(110, now + 0.5); // A2
+                // Transições suaves e lentas
+                musicOsc.frequency.linearRampToValueAtTime(82.41, now + 1.5); 
+                musicOsc.frequency.linearRampToValueAtTime(73.42, now + 3.0);
             }
-        }, 500);
+        }, 3000);
     }
 
     function toggleFullscreen() {
@@ -129,7 +111,7 @@
 
     function triggerShipGlow(type) {
         ship.classList.remove('glow-shake', 'glow-life', 'glow-damage');
-        void ship.offsetWidth; // Force repaint
+        void ship.offsetWidth;
         ship.classList.add('glow-' + type);
         setTimeout(() => ship.classList.remove('glow-' + type), 200);
     }
@@ -154,21 +136,16 @@
         if(rand < 0.3) {
             type = 'shake'; obj.classList.add('obj-milkshake');
             obj.style.backgroundImage = "url('milkshake.png')";
-            obj.style.width = sizes.milkshake.w + 'px'; obj.style.height = sizes.milkshake.h + 'px';
+            obj.style.width = '36px'; obj.style.height = '46px';
         } else if(rand < 0.38) {
             type = 'life'; obj.classList.add('obj-life');
             obj.style.backgroundImage = "url('vida.png')";
-            obj.style.width = obj.style.height = sizes.vida + 'px';
+            obj.style.width = '35px'; obj.style.height = '35px';
         } else {
             type = 'bad';
             const imgs = ['planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
             obj.style.backgroundImage = `url('${imgs[Math.floor(Math.random()*4)]}')`;
-            obj.style.width = obj.style.height = sizes[imgs[0].split('.')[0]] || '45px';
-            // Ajuste dinâmico de tamanho para meteoros baseados nos tamanhos pré-definidos
-            const imgName = imgs[Math.floor(Math.random()*4)];
-            const baseSize = sizes[imgName] || 45;
-            obj.style.backgroundImage = `url('${imgName}')`;
-            obj.style.width = obj.style.height = baseSize + 'px';
+            obj.style.width = obj.style.height = '45px';
         }
 
         obj.style.left = Math.random() * (container.offsetWidth - 50) + 'px';
@@ -182,7 +159,6 @@
             obj.style.top = pos + 'px';
             
             const r1 = ship.getBoundingClientRect(), r2 = obj.getBoundingClientRect();
-            // Colisão milimétrica
             if(!(r1.right < r2.left+5 || r1.left > r2.right-5 || r1.bottom < r2.top+5 || r1.top > r2.bottom-5)) {
                 if(type === 'shake') { 
                     score++; document.getElementById('score').innerText = score;
@@ -190,7 +166,7 @@
                 } else if(type === 'life') {
                     if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); triggerShipGlow('life'); }
                 } else {
-                    lives--; updateLives(); playSfx(150, 'sawtooth', 0.2); triggerShipGlow('damage');
+                    lives--; updateLives(); playSfx(100, 'sine', 0.2); triggerShipGlow('damage');
                     if(lives <= 0) gameOver();
                 }
                 obj.remove(); return;
@@ -214,8 +190,7 @@
     function gameOver() {
         active = false; clearTimeout(spawnTimeout);
         if(musicGain) musicGain.gain.setValueAtTime(0, audioCtx.currentTime);
-        // Música de GameOver restaurada
-        playSfx(60, 'square', 0.3, 1.5); 
+        playSfx(50, 'sine', 0.3, 2.0); 
         document.getElementById('msg').style.display = 'block';
         document.getElementById('final-stats').innerText = `Shakes coletados: ${score}`;
         ship.style.display = 'none';
@@ -231,7 +206,7 @@
     }
 
     function move(e) {
-        initAudio(); // Ativa áudio na primeira interação
+        initAudio();
         if(!active) return;
         const x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
         const rect = container.getBoundingClientRect();
@@ -243,9 +218,6 @@
     container.addEventListener('mousemove', move);
     container.addEventListener('touchstart', move);
     container.addEventListener('touchmove', (e) => { if(active) e.preventDefault(); move(e); }, {passive: false});
-
-    // Dificuldade progressiva
-    setInterval(() => { if(active && speed < 16) speed += 0.4; }, 4000);
 
     updateLives(); spawn();
     for(let i=0; i<40; i++) {
