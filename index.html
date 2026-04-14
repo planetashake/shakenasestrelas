@@ -3,59 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Beta 0.5 (Preload Edition)</title>
+    <title>Planeta Shake - Beta 0.6 (High Performance)</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
+        
         #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; display: none; }
         
-        /* Tela de Loading */
+        /* Tela de Loading com Logo */
         #loading-screen { 
             position: absolute; width: 100vw; height: 100vh; background: #05051a; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; 
         }
-        #load-bar-container { width: 200px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; margin-top: 20px; overflow: hidden; }
-        #load-bar { width: 0%; height: 100%; background: #fc845d; transition: width 0.3s; }
+        #loading-logo { width: 150px; margin-bottom: 20px; animation: pulse-logo 2s infinite ease-in-out; }
+        @keyframes pulse-logo { 0%, 100% { opacity: 0.8; transform: scale(1); } 50% { opacity: 1; transform: scale(1.05); } }
         
-        #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 120px; z-index: 100; opacity: 0.9; }
-        #fullscreen-btn { position: absolute; top: 15px; left: 15px; z-index: 110; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 10px 18px; border-radius: 25px; font-weight: bold; cursor: pointer; font-size: 0.7rem; backdrop-filter: blur(4px); }
-        #ui-right-cluster { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; align-items: flex-end; z-index: 100; }
+        #load-bar-container { width: 200px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        #load-bar { width: 0%; height: 100%; background: #fc845d; transition: width 0.2s; }
+        
+        #main-logo { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 100px; z-index: 100; opacity: 0.9; pointer-events: none; }
+        #fullscreen-btn { position: absolute; top: 15px; left: 15px; z-index: 110; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 15px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; }
+        
         .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 2px #000; }
-        #lives-container { display: flex; gap: 6px; margin-top: 5px; }
-        .life-icon { width: 20px; height: 20px; background-size: contain; background-repeat: no-repeat; filter: drop-shadow(0 0 5px #00ff00); }
-        #ship { position: absolute; width: 45px; height: 35px; background-size: contain; background-repeat: no-repeat; z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); filter: drop-shadow(0 0 10px #00f2ff); }
-        .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; }
-        .obj-milkshake { animation: pulse-orange 0.8s infinite alternate ease-in-out; }
-        .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
-        @keyframes pulse-orange { from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); } to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); } }
-        @keyframes pulse-green { from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); } to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); } }
-        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 35px; border-radius: 25px; color: #f8f9f9; text-align: center; display: none; z-index: 200; width: 85%; max-width: 350px; border: 2px solid #4f2bd0; }
-        .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1rem; }
-        .version-footer { margin-top: 25px; font-size: 0.7rem; color: rgba(255, 255, 255, 0.7); display: block; width: 100%; text-align: center; }
-        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; z-index: 1; }
+        #ship { 
+            position: absolute; width: 45px; height: 35px; background-size: contain; background-repeat: no-repeat; 
+            z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); 
+            filter: drop-shadow(0 0 10px #00f2ff); will-change: left; 
+        }
+
+        .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; will-change: transform; }
+        
+        #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 30px; border-radius: 20px; text-align: center; display: none; z-index: 200; width: 85%; max-width: 320px; border: 2px solid #4f2bd0; }
+        .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; width: 100%; font-size: 1rem; margin-top: 15px; }
+        .version-footer { margin-top: 20px; font-size: 0.65rem; color: rgba(255, 255, 255, 0.5); }
+        .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; }
     </style>
 </head>
 <body>
     <div id="loading-screen">
-        <h2 id="load-text" style="color: #fc845d; letter-spacing: 2px;">CARREGANDO...</h2>
+        <img src="logo.png" id="loading-logo">
         <div id="load-bar-container"><div id="load-bar"></div></div>
-        <button id="start-btn" class="restart-btn" style="display:none; width: 200px;" onclick="startGame()">INICIAR AVENTURA</button>
+        <button id="start-btn" class="restart-btn" style="display:none; width: 180px;" onclick="startGame()">INICIAR</button>
     </div>
 
     <div id="game-container">
         <button id="fullscreen-btn" onclick="toggleFullscreen()">TELA CHEIA</button>
         <img src="logo.png" id="main-logo">
-        <div id="ui-right-cluster">
+        <div style="position: absolute; top: 15px; right: 15px; text-align: right; z-index: 100;">
             <div class="orange-ui">Shake: <span id="score">0</span></div>
-            <div id="lives-container"></div>
+            <div id="lives-container" style="display: flex; gap: 5px; margin-top: 5px; justify-content: flex-end;"></div>
         </div>
         <div id="ship"></div>
         <div id="msg">
-            <img src="logo.png" style="width: 140px; margin-bottom: 15px;">
-            <h1 style="color: #fc845d; margin: 0;">COLISÃO FATAL</h1>
-            <p id="final-stats" style="font-size: 1.2rem; margin: 15px 0;"></p>
-            <button class="restart-btn" onclick="resetGame()">REINICIAR</button>
-            <div class="version-footer">beta 0.5 - © Planeta Shake LTDA</div>
+            <h1 style="color: #fc845d; margin: 0; font-size: 1.5rem;">FIM DE VOO</h1>
+            <p id="final-stats" style="font-size: 1.1rem; margin: 10px 0;"></p>
+            <button class="restart-btn" onclick="resetGame()">JOGAR DE NOVO</button>
+            <div class="version-footer">beta 0.6 - © Planeta Shake LTDA</div>
         </div>
     </div>
 
@@ -66,36 +69,32 @@
     const assets = ['logo.png', 'nave.png', 'milkshake.png', 'vida.png', 'planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
     let loadedCount = 0;
 
-    // PRÉ-CARREGAMENTO DE ARQUIVOS
     function preloadAssets() {
         assets.forEach(src => {
             const img = new Image();
             img.src = src;
-            img.onload = () => {
-                loadedCount++;
-                const progress = (loadedCount / assets.length) * 100;
-                document.getElementById('load-bar').style.width = progress + '%';
-                if(loadedCount === assets.length) {
-                    document.getElementById('load-text').innerText = "SISTEMAS PRONTOS";
-                    document.getElementById('start-btn').style.display = 'block';
-                }
-            };
-            img.onerror = () => { // Caso algum arquivo falte, continua para não travar o loading
-                loadedCount++;
-                if(loadedCount === assets.length) document.getElementById('start-btn').style.display = 'block';
-            };
+            img.onload = checkAssets;
+            img.onerror = checkAssets;
         });
+    }
+
+    function checkAssets() {
+        loadedCount++;
+        const progress = (loadedCount / assets.length) * 100;
+        document.getElementById('load-bar').style.width = progress + '%';
+        if(loadedCount >= assets.length) {
+            document.getElementById('start-btn').style.display = 'block';
+        }
     }
 
     function startGame() {
         document.getElementById('loading-screen').style.display = 'none';
         container.style.display = 'block';
         active = true;
-        initAudio();
-        spawn();
-        updateLives();
-        // Set background images after container is visible
         ship.style.backgroundImage = "url('nave.png')";
+        initAudio();
+        updateLives();
+        spawn();
     }
 
     function initAudio() {
@@ -108,7 +107,7 @@
 
     function startMusic() {
         if (musicLoop) return;
-        const melody = [329.63, 392.00, 440.00, 523.25, 493.88, 392.00, 440.00];
+        const melody = [329.63, 392.00, 440.00, 523.25];
         let step = 0;
         function playNote() {
             if (!active || !audioCtx) return;
@@ -116,12 +115,12 @@
             const g = audioCtx.createGain();
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(melody[step % melody.length], audioCtx.currentTime);
-            g.gain.setValueAtTime(0.02, audioCtx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            g.gain.setValueAtTime(0.015, audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
             osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.8);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.6);
             step++;
-            musicLoop = setTimeout(playNote, 450);
+            musicLoop = setTimeout(playNote, 500);
         }
         playNote();
     }
@@ -131,23 +130,14 @@
         else document.exitFullscreen();
     }
 
-    function vibrate(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
-
-    function triggerShipGlow(type) {
-        ship.classList.remove('glow-shake', 'glow-life', 'glow-damage');
-        void ship.offsetWidth;
-        ship.classList.add('glow-' + type);
-        setTimeout(() => ship.classList.remove('glow-' + type), 200);
-    }
-
-    function playSfx(freq, type, vol, dur = 0.3) {
+    function playSfx(freq, type, vol) {
         if(!audioCtx) return;
         const o = audioCtx.createOscillator(), g = audioCtx.createGain();
         o.type = type; o.frequency.setValueAtTime(freq, audioCtx.currentTime);
         g.gain.setValueAtTime(vol, audioCtx.currentTime);
-        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
         o.connect(g); g.connect(audioCtx.destination);
-        o.start(); o.stop(audioCtx.currentTime + dur);
+        o.start(); o.stop(audioCtx.currentTime + 0.3);
     }
 
     function spawn() {
@@ -155,97 +145,89 @@
         const obj = document.createElement('div');
         obj.className = 'obj';
         const rand = Math.random();
-        let type;
+        let type = 'bad';
+        
         if(rand < 0.3) {
-            type = 'shake'; obj.classList.add('obj-milkshake');
-            obj.style.backgroundImage = "url('milkshake.png')";
+            type = 'shake'; obj.style.backgroundImage = "url('milkshake.png')";
             obj.style.width = '36px'; obj.style.height = '46px';
-        } else if(rand < 0.38) {
-            type = 'life'; obj.classList.add('obj-life');
-            obj.style.backgroundImage = "url('vida.png')";
-            obj.style.width = '35px'; obj.style.height = '35px';
+        } else if(rand < 0.35) {
+            type = 'life'; obj.style.backgroundImage = "url('vida.png')";
+            obj.style.width = '30px'; obj.style.height = '30px';
         } else {
-            type = 'bad';
             const imgs = ['planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
             obj.style.backgroundImage = `url('${imgs[Math.floor(Math.random()*4)]}')`;
-            obj.style.width = obj.style.height = '45px';
+            obj.style.width = obj.style.height = '42px';
         }
-        obj.style.left = Math.random() * (container.offsetWidth - 50) + 'px';
-        obj.style.top = '-60px'; container.appendChild(obj);
 
+        obj.style.left = Math.random() * (container.offsetWidth - 40) + 'px';
         let pos = -60;
+        container.appendChild(obj);
+
         function fall() {
             if(!active) { obj.remove(); return; }
-            pos += speed; obj.style.top = pos + 'px';
-            const r1 = ship.getBoundingClientRect(), r2 = obj.getBoundingClientRect();
-            if(!(r1.right < r2.left+5 || r1.left > r2.right-5 || r1.bottom < r2.top+5 || r1.top > r2.bottom-5)) {
-                if(type === 'shake') { 
-                    score++; document.getElementById('score').innerText = score;
-                    playSfx(880, 'sine', 0.1); triggerShipGlow('shake');
-                } else if(type === 'life') {
-                    if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); triggerShipGlow('life'); }
-                } else {
-                    lives--; updateLives(); 
-                    playSfx(100, 'sawtooth', 0.25, 0.4); 
-                    triggerShipGlow('damage');
-                    vibrate(200);
-                    if(lives <= 0) gameOver();
+            pos += speed;
+            obj.style.transform = `translateY(${pos}px)`; // Uso de transform para performance
+            
+            if(pos > window.innerHeight - 150) { // Checa colisão apenas quando perto da nave
+                const r1 = ship.getBoundingClientRect(), r2 = obj.getBoundingClientRect();
+                if(!(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom)) {
+                    if(type === 'shake') { 
+                        score++; document.getElementById('score').innerText = score;
+                        playSfx(880, 'sine', 0.1);
+                    } else if(type === 'life') {
+                        if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); }
+                    } else {
+                        lives--; updateLives(); 
+                        playSfx(100, 'sawtooth', 0.2); 
+                        if (navigator.vibrate) navigator.vibrate(200);
+                        if(lives <= 0) gameOver();
+                    }
+                    obj.remove(); return;
                 }
-                obj.remove(); return;
             }
             if(pos > window.innerHeight) obj.remove(); else requestAnimationFrame(fall);
         }
-            fall();
-            spawnTimeout = setTimeout(spawn, 800);
+        requestAnimationFrame(fall);
+        spawnTimeout = setTimeout(spawn, 900);
     }
 
     function updateLives() {
         const div = document.getElementById('lives-container');
         div.innerHTML = '';
         for(let i=0; i<lives; i++) {
-            const icon = document.createElement('div'); 
-            icon.className = 'life-icon';
-            icon.style.backgroundImage = "url('vida.png')";
-            div.appendChild(icon);
+            const img = document.createElement('img');
+            img.src = 'vida.png'; img.style.width = '20px';
+            div.appendChild(img);
         }
     }
 
     function gameOver() {
         active = false; clearTimeout(spawnTimeout);
-        clearTimeout(musicLoop); musicLoop = null;
-        playSfx(60, 'square', 0.3, 1.5); 
-        vibrate(500);
+        if (navigator.vibrate) navigator.vibrate(500);
         document.getElementById('msg').style.display = 'block';
-        document.getElementById('final-stats').innerText = `Shakes coletados: ${score}`;
+        document.getElementById('final-stats').innerText = `Shakes: ${score}`;
         ship.style.display = 'none';
     }
 
     function resetGame() {
-        score = 0; lives = 2; speed = 3; active = true;
+        score = 0; lives = 2; active = true;
         document.getElementById('score').innerText = '0';
         document.getElementById('msg').style.display = 'none';
         ship.style.display = 'block'; ship.style.left = '50%';
-        updateLives(); spawn(); startMusic();
+        updateLives(); spawn();
     }
 
-    function move(e) {
+    container.addEventListener('touchmove', (e) => {
         if(!active) return;
-        const x = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
-        const rect = container.getBoundingClientRect();
-        let nx = x - rect.left;
-        nx = Math.max(25, Math.min(container.offsetWidth - 25, nx));
-        ship.style.left = nx + 'px';
-    }
+        e.preventDefault();
+        let x = e.touches[0].clientX;
+        ship.style.left = Math.max(20, Math.min(container.offsetWidth - 25, x)) + 'px';
+    }, {passive: false});
 
-    container.addEventListener('mousemove', move);
-    container.addEventListener('touchstart', move);
-    container.addEventListener('touchmove', (e) => { if(active) e.preventDefault(); move(e); }, {passive: false});
-
-    // Iniciar Preload e estrelas
     preloadAssets();
-    for(let i=0; i<40; i++) {
+    for(let i=0; i<30; i++) {
         const s = document.createElement('div'); s.className = 'star';
-        s.style.width = s.style.height = Math.random()*3+'px';
+        s.style.width = s.style.height = Math.random()*2+'px';
         s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
         container.appendChild(s);
     }
