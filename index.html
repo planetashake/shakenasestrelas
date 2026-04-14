@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Beta 0.6 (High Performance)</title>
+    <title>Planeta Shake - Beta 0.7</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
         
         #game-container { position: relative; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%); overflow: hidden; display: none; }
         
-        /* Tela de Loading com Logo */
         #loading-screen { 
             position: absolute; width: 100vw; height: 100vh; background: #05051a; 
             display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 500; 
@@ -25,14 +24,26 @@
         #fullscreen-btn { position: absolute; top: 15px; left: 15px; z-index: 110; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; padding: 8px 15px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; }
         
         .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.2rem; text-shadow: 2px 2px #000; }
+        
         #ship { 
             position: absolute; width: 45px; height: 35px; background-size: contain; background-repeat: no-repeat; 
             z-index: 50; left: 50%; bottom: 100px; transform: translateX(-50%) rotate(-38deg); 
-            filter: drop-shadow(0 0 10px #00f2ff); will-change: left; 
+            filter: drop-shadow(0 0 10px #00f2ff); will-change: left, filter; transition: filter 0.1s;
         }
 
+        /* Efeitos de Brilho na Nave */
+        .glow-shake { filter: drop-shadow(0 0 25px #fc845d) brightness(1.5) !important; }
+        .glow-life { filter: drop-shadow(0 0 25px #00ff00) brightness(1.5) !important; }
+        .glow-damage { filter: drop-shadow(0 0 25px #ff0000) brightness(1.5) !important; }
+
+        /* Brilho nos Objetos */
         .obj { position: absolute; z-index: 40; background-size: contain; background-repeat: no-repeat; will-change: transform; }
+        .obj-milkshake { animation: pulse-orange 0.8s infinite alternate ease-in-out; }
+        .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
         
+        @keyframes pulse-orange { from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); } to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); } }
+        @keyframes pulse-green { from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); } to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); } }
+
         #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 30px; border-radius: 20px; text-align: center; display: none; z-index: 200; width: 85%; max-width: 320px; border: 2px solid #4f2bd0; }
         .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; width: 100%; font-size: 1rem; margin-top: 15px; }
         .version-footer { margin-top: 20px; font-size: 0.65rem; color: rgba(255, 255, 255, 0.5); }
@@ -55,10 +66,10 @@
         </div>
         <div id="ship"></div>
         <div id="msg">
-            <h1 style="color: #fc845d; margin: 0; font-size: 1.5rem;">FIM DE VOO</h1>
+            <h1 style="color: #fc845d; margin: 0; font-size: 1.5rem;">COLISÃO FATAL</h1>
             <p id="final-stats" style="font-size: 1.1rem; margin: 10px 0;"></p>
             <button class="restart-btn" onclick="resetGame()">JOGAR DE NOVO</button>
-            <div class="version-footer">beta 0.6 - © Planeta Shake LTDA</div>
+            <div class="version-footer">beta 0.7 - © Planeta Shake LTDA</div>
         </div>
     </div>
 
@@ -82,9 +93,7 @@
         loadedCount++;
         const progress = (loadedCount / assets.length) * 100;
         document.getElementById('load-bar').style.width = progress + '%';
-        if(loadedCount >= assets.length) {
-            document.getElementById('start-btn').style.display = 'block';
-        }
+        if(loadedCount >= assets.length) document.getElementById('start-btn').style.display = 'block';
     }
 
     function startGame() {
@@ -125,9 +134,11 @@
         playNote();
     }
 
-    function toggleFullscreen() {
-        if (!document.fullscreenElement) container.requestFullscreen().catch(()=>{});
-        else document.exitFullscreen();
+    function triggerShipGlow(type) {
+        ship.classList.remove('glow-shake', 'glow-life', 'glow-damage');
+        void ship.offsetWidth;
+        ship.classList.add('glow-' + type);
+        setTimeout(() => ship.classList.remove('glow-' + type), 200);
     }
 
     function playSfx(freq, type, vol) {
@@ -148,10 +159,12 @@
         let type = 'bad';
         
         if(rand < 0.3) {
-            type = 'shake'; obj.style.backgroundImage = "url('milkshake.png')";
+            type = 'shake'; obj.classList.add('obj-milkshake');
+            obj.style.backgroundImage = "url('milkshake.png')";
             obj.style.width = '36px'; obj.style.height = '46px';
         } else if(rand < 0.35) {
-            type = 'life'; obj.style.backgroundImage = "url('vida.png')";
+            type = 'life'; obj.classList.add('obj-life');
+            obj.style.backgroundImage = "url('vida.png')";
             obj.style.width = '30px'; obj.style.height = '30px';
         } else {
             const imgs = ['planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
@@ -166,19 +179,19 @@
         function fall() {
             if(!active) { obj.remove(); return; }
             pos += speed;
-            obj.style.transform = `translateY(${pos}px)`; // Uso de transform para performance
+            obj.style.transform = `translateY(${pos}px)`;
             
-            if(pos > window.innerHeight - 150) { // Checa colisão apenas quando perto da nave
+            if(pos > window.innerHeight - 150) {
                 const r1 = ship.getBoundingClientRect(), r2 = obj.getBoundingClientRect();
                 if(!(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom)) {
                     if(type === 'shake') { 
                         score++; document.getElementById('score').innerText = score;
-                        playSfx(880, 'sine', 0.1);
+                        playSfx(880, 'sine', 0.1); triggerShipGlow('shake');
                     } else if(type === 'life') {
-                        if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); }
+                        if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); triggerShipGlow('life'); }
                     } else {
                         lives--; updateLives(); 
-                        playSfx(100, 'sawtooth', 0.2); 
+                        playSfx(100, 'sawtooth', 0.2); triggerShipGlow('damage');
                         if (navigator.vibrate) navigator.vibrate(200);
                         if(lives <= 0) gameOver();
                     }
@@ -205,7 +218,7 @@
         active = false; clearTimeout(spawnTimeout);
         if (navigator.vibrate) navigator.vibrate(500);
         document.getElementById('msg').style.display = 'block';
-        document.getElementById('final-stats').innerText = `Shakes: ${score}`;
+        document.getElementById('final-stats').innerText = `${score} shakes coletados`;
         ship.style.display = 'none';
     }
 
@@ -214,7 +227,12 @@
         document.getElementById('score').innerText = '0';
         document.getElementById('msg').style.display = 'none';
         ship.style.display = 'block'; ship.style.left = '50%';
-        updateLives(); spawn();
+        updateLives(); spawn(); startMusic();
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) container.requestFullscreen().catch(()=>{});
+        else document.exitFullscreen();
     }
 
     container.addEventListener('touchmove', (e) => {
