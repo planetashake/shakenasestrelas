@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Planeta Shake - Visual Polished v4</title>
+    <style>
+        * { 
+            touch-action: none; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+            backface-visibility: hidden;
+        }
+        
+        html, body { 
+            margin: 0; padding: 0; width: 100%; height: 100%; 
+            background: #020205; overflow: hidden; 
+            display: flex; flex-direction: column;
+            font-family: Arial, sans-serif; /* Fonte base mais limpa */
+        }
+
+        #game-container { 
+            position: relative; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #2e1a99 0%, #05051a 100%);
+            overflow: hidden;
+            transform: translateZ(0);
+        }
+
+        #main-logo {
+            position: absolute; top: 10px; left: 50%;
+            transform: translateX(-50%);
+            width: 100px; height: auto;
+            z-index: 15; opacity: 0.8;
+            pointer-events: none;
+        }
+
+        #ui-right-cluster {
+            position: absolute; top: 15px; right: 15px;
+            display: flex; flex-direction: column; align-items: flex-end;
+            z-index: 30; text-shadow: 1px 1px 3px #000;
+        }
+
+        .orange-ui { color: #fc845d; font-weight: 900; font-size: 1.1rem; margin-bottom: 3px; }
+
+        #lives-container { display: flex; gap: 4px; min-height: 20px; }
+        .life-icon { 
+            width: 20px; height: 20px; 
+            background-image: url('vida.png'); 
+            background-size: contain; background-repeat: no-repeat; 
+        }
+
+        #ship {
+            position: absolute; 
+            background-image: url('nave.png'); background-size: contain; background-repeat: no-repeat;
+            z-index: 10; left: 50%; 
+            bottom: 120px; 
+            transform: translateX(-50%) rotate(-30deg) translateZ(0); 
+            filter: drop-shadow(0 0 8px #00f2ff);
+            will-change: left, width, height, filter;
+            transition: width 0.3s ease, height 0.3s ease, filter 0.15s ease-out;
+        }
+
+        /* ESTADOS DE BRILHO FORTE DA NAVE */
+        #ship.glow-milkshake { filter: drop-shadow(0 0 25px #fc845d) brightness(1.3); }
+        #ship.glow-life { filter: drop-shadow(0 0 25px #00ff00) brightness(1.3); }
+        #ship.glow-damage { filter: drop-shadow(0 0 25px #ff0000) brightness(1.3); }
+
+        .obj { 
+            position: absolute; 
+            background-size: contain; 
+            background-repeat: no-repeat; 
+            z-index: 5; 
+            transform: translateZ(0);
+            will-change: top, filter;
+        }
+        
+        /* ANIMAÇÕES DE BRILHO PULSANTE NOS COLETÁVEIS */
+        .obj-milkshake { 
+            animation: pulse-orange 1s infinite alternate ease-in-out;
+        }
+        .obj-life { 
+            animation: pulse-green 0.8s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulse-orange {
+            from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.6)) brightness(1); }
+            to { filter: drop-shadow(0 0 15px rgba(252, 132, 93, 1)) brightness(1.2); }
+        }
+
+        @keyframes pulse-green {
+            from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.6)) brightness(1); }
+            to { filter: drop-shadow(0 0 18px rgba(0, 255, 0, 1)) brightness(1.2); }
+        }
+
+        #msg { 
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(5, 5, 26, 0.98); padding: 40px; border-radius: 25px;
+            color: #f8f9f9; text-align: center; display: none; z-index: 50; width: 90%; max-width: 400px;
+            border: 3px solid #4f2bd0;
+        }
+
+        .restart-btn { 
+            padding: 18px 36px; background: #fc845d; border: none; 
+            font-weight: bold; border-radius: 50px; font-size: 1.3rem; 
+            color: #fff; cursor: pointer; margin-top: 25px; width: 100%;
+        }
+
+        .star { position: absolute; background: #fff; border-radius: 50%; z-index: 0; opacity: 0.4; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <img src="logo.png" id="main-logo" alt="Planeta Shake">
+
+        <div id="ui-right-cluster">
+            <div class="orange-ui">SHAKES: <span id="score">0</span></div>
+            <div id="lives-container"></div>
+        </div>
+
+        <div id="ship"></div>
+
+        <div id="msg">
+            <img src="logo.png" style="width: 120px; margin-bottom: 10px;">
+            <h1 style="color: #fc845d; margin: 0; font-size: 1.8rem;">COLISÃO FATAL!</h1>
+            <p id="final-stats" style="font-size: 1.2rem; margin-top: 10px;"></p>
+            <button class="restart-btn" onclick="resetGame()">REINICIAR</button>
+        </div>
+    </div>
+
+<script>
+    let audioCtx;
+    let active = true;
+    let spawnTimeout;
+    
+    const ship = document.getElementById('ship');
+    const container = document.getElementById('game-container');
+    const scoreDisp = document.getElementById('score');
+    const livesContainer = document.getElementById('lives-container');
+    const msg = document.getElementById('msg');
+
+    let score = 0, lives = 2, speed = 6;
+    
+    // Configurações de tamanho base
+    const sizes = {
+        'planeta.png': 39,    
+        'venus.png': 59,      
+        'meteoro.png': 63,    
+        'foguete.png': 63,    
+        'milkshake': { w: 45, h: 58 }, 
+        'vida': 36            
+    };
+
+    function initAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function updateShipSize() {
+        // Nave Base v3 (47x37)
+        const baseW = 47; 
+        const baseH = 37; 
+        const mult = 1 + (Math.max(0, lives - 1) * 0.1);
+        ship.style.width = (baseW * mult) + 'px';
+        ship.style.height = (baseH * mult) + 'px';
+        
+        livesContainer.innerHTML = '';
+        for (let i = 0; i < lives; i++) {
+            const icon = document.createElement('div');
+            icon.className = 'life-icon';
+            livesContainer.appendChild(icon);
+        }
+    }
+
+    function handleInput(e) {
+        initAudio();
+        if(!active) return;
+        const clientX = (e.type.includes('touch') ? e.touches[0].clientX : e.clientX);
+        const rect = container.getBoundingClientRect();
+        let targetX = clientX - rect.left;
+        let hw = ship.offsetWidth / 2;
+        targetX = Math.max(hw, Math.min(container.offsetWidth - hw, targetX));
+        ship.style.left = targetX + 'px';
+    }
+
+    container.addEventListener('mousemove', handleInput);
+    container.addEventListener('touchstart', handleInput);
+    container.addEventListener('touchmove', (e) => { e.preventDefault(); handleInput(e); }, {passive: false});
+
+    function spawn() {
+        if(!active) return;
+        const obj = document.createElement('div');
+        const rand = Math.random();
+        obj.className = 'obj';
+        
+        let type, img;
+        if(rand < 0.30) { 
+            type = 'milkshake';
+            obj.style.backgroundImage = "url('milkshake.png')";
+            obj.style.width = sizes.milkshake.w + 'px';
+            obj.style.height = sizes.milkshake.h + 'px';
+            obj.classList.add('obj-milkshake');
+        } else if (rand < 0.40) { 
+            type = 'life';
+            obj.style.backgroundImage = "url('vida.png')"; 
+            obj.style.width = obj.style.height = sizes.vida + 'px';
+            obj.classList.add('obj-life');
+        } else { 
+            type = 'bad';
+            const obs = ['planeta.png', 'venus.png', 'meteoro.png', 'foguete.png'];
+            img = obs[Math.floor(Math.random()*obs.length)];
+            obj.style.backgroundImage = `url('${img}')`;
+            obj.style.width = obj.style.height = sizes[img] + 'px';
+        }
+        
+        obj.dataset.type = type;
+        obj.style.left = Math.random() * (container.offsetWidth - 60) + 'px';
+        obj.style.top = '-80px';
+        container.appendChild(obj);
+
+        let tp = -80;
+        function move() {
+            if(!active) { obj.remove(); return; }
+            tp += speed;
+            obj.style.top = tp + 'px';
+            
+            const s = ship.getBoundingClientRect();
+            const o = obj.getBoundingClientRect();
+            
+            // Colisão milimétrica (margem de 2px v3)
+            if (s.left < o.right-2 && s.right > o.left+2 && s.top < o.bottom-2 && s.bottom > o.top+2) {
+                if(type === 'bad') {
+                    lives--;
+                    
+                    // Feedback visual de dano (Vermelho)
+                    ship.classList.add('glow-damage');
+                    setTimeout(() => ship.classList.remove('glow-damage'), 150);
+
+                    if(lives <= 0) gameOver();
+                    else updateShipSize();
+                } else if (type === 'milkshake') {
+                    score++;
+                    scoreDisp.innerText = score;
+
+                    // Feedback visual de shake (Laranja)
+                    ship.classList.add('glow-milkshake');
+                    setTimeout(() => ship.classList.remove('glow-milkshake'), 150);
+                } else if (type === 'life') {
+                    if(lives < 3) { 
+                        lives++; 
+                        updateShipSize();
+
+                        // Feedback visual de vida (Verde)
+                        ship.classList.add('glow-life');
+                        setTimeout(() => ship.classList.remove('glow-life'), 150);
+                    }
+                }
+                obj.remove();
+                return;
+            }
+
+            if(tp > window.innerHeight) {
+                obj.remove();
+            } else {
+                requestAnimationFrame(move);
+            }
+        }
+        requestAnimationFrame(move);
+        spawnTimeout = setTimeout(spawn, Math.random() * 400 + 500);
+    }
+
+    function gameOver() {
+        active = false;
+        clearTimeout(spawnTimeout);
+        msg.style.display = 'block';
+        document.getElementById('final-stats').innerText = `Total: ${score} shakes coletados!`;
+        ship.style.opacity = '0.2';
+    }
+
+    function resetGame() {
+        active = true;
+        score = 0;
+        lives = 2;
+        speed = 6;
+        scoreDisp.innerText = "0";
+        msg.style.display = 'none';
+        ship.style.opacity = '1';
+        updateShipSize();
+        spawn();
+    }
+
+    // Aceleração progressiva v3
+    setInterval(() => { if(active && speed < 15) speed += 0.3; }, 4000);
+
+    updateShipSize();
+    spawn();
+
+    for(let i=0; i<30; i++) {
+        let star = document.createElement('div');
+        star.className = 'star';
+        star.style.width = star.style.height = Math.random()*2+'px';
+        star.style.left = Math.random()*100+'%'; star.style.top = Math.random()*100+'%';
+        container.appendChild(star);
+    }
+</script>
+</body>
+</html>
