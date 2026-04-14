@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Planeta Shake - Edição Foco e Controle</title>
+    <title>Planeta Shake - Beta 0.2</title>
     <style>
         * { touch-action: none; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #020205; overflow: hidden; font-family: 'Segoe UI', sans-serif; color: #fff; }
@@ -23,8 +23,13 @@
         .obj-life { animation: pulse-green 0.8s infinite alternate ease-in-out; }
         @keyframes pulse-orange { from { filter: drop-shadow(0 0 5px rgba(252, 132, 93, 0.7)); } to { filter: drop-shadow(0 0 15px #fc845d) drop-shadow(0 0 5px #fff); } }
         @keyframes pulse-green { from { filter: drop-shadow(0 0 5px rgba(0, 255, 0, 0.7)); } to { filter: drop-shadow(0 0 15px #00ff00) drop-shadow(0 0 5px #fff); } }
+        
         #msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(5, 5, 26, 0.98); padding: 35px; border-radius: 25px; color: #f8f9f9; text-align: center; display: none; z-index: 200; width: 80%; max-width: 350px; border: 2px solid #4f2bd0; }
         .restart-btn { padding: 15px 30px; background: #fc845d; border: none; font-weight: bold; border-radius: 50px; color: #fff; cursor: pointer; margin-top: 20px; width: 100%; font-size: 1rem; }
+        
+        /* Estilo da Versão - Discreto */
+        .version-footer { margin-top: 25px; font-size: 0.65rem; color: rgba(255, 255, 255, 0.5); letter-spacing: 0.5px; }
+        
         .star { position: absolute; background: #fff; border-radius: 50%; opacity: 0.3; pointer-events: none; z-index: 1; }
     </style>
 </head>
@@ -42,19 +47,41 @@
             <h1 style="color: #fc845d; margin: 0;">COLISÃO FATAL</h1>
             <p id="final-stats" style="font-size: 1.2rem; margin: 15px 0;"></p>
             <button class="restart-btn" onclick="resetGame()">REINICIAR</button>
+            <div class="version-footer">beta 0.2 - © Planeta Shake LTDA</div>
         </div>
     </div>
 
 <script>
-    let audioCtx, active = true, spawnTimeout;
-    let score = 0, lives = 2, speed = 3; // Velocidade inicial reduzida para 3
+    let audioCtx, musicLoop, active = true, spawnTimeout;
+    let score = 0, lives = 2, speed = 3;
     const ship = document.getElementById('ship'), container = document.getElementById('game-container');
 
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            startMusic();
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function startMusic() {
+        if (musicLoop) return;
+        const melody = [329.63, 392.00, 440.00, 523.25, 493.88, 392.00, 440.00];
+        let step = 0;
+        function playNote() {
+            if (!active || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(melody[step % melody.length], audioCtx.currentTime);
+            g.gain.setValueAtTime(0.02, audioCtx.currentTime); // Volume controlado
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            osc.connect(g); g.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.8);
+            step++;
+            musicLoop = setTimeout(playNote, 450);
+        }
+        playNote();
     }
 
     function toggleFullscreen() {
@@ -116,7 +143,7 @@
                     if(lives < 3) { lives++; updateLives(); playSfx(1200, 'sine', 0.1); triggerShipGlow('life'); }
                 } else {
                     lives--; updateLives(); 
-                    playSfx(100, 'sawtooth', 0.25, 0.4); // Som de colisão mantido
+                    playSfx(100, 'sawtooth', 0.25, 0.4); 
                     triggerShipGlow('damage');
                     if(lives <= 0) gameOver();
                 }
@@ -139,6 +166,7 @@
 
     function gameOver() {
         active = false; clearTimeout(spawnTimeout);
+        clearTimeout(musicLoop); musicLoop = null;
         playSfx(60, 'square', 0.3, 1.5); 
         document.getElementById('msg').style.display = 'block';
         document.getElementById('final-stats').innerText = `Shakes coletados: ${score}`;
